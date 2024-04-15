@@ -38,7 +38,7 @@ func (r *DBConn) Get(ctx context.Context, email string) (*user.User, error) {
 		return nil, err
 	}
 	for rows.Next() {
-		err = rows.Scan(&u.ID, &u.Email, &u.Password, &u.FirstName, &u.LastName)
+		err = rows.Scan(&u.Id, &u.Email, &u.Password, &u.FirstName, &u.LastName)
 		if err != nil {
 			span.RecordError(err)
 			span.SetStatus(codes.Error, err.Error())

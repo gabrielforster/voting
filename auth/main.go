@@ -9,7 +9,7 @@ import (
     "time"
     "context"
 
-	"github.com/gabrielforster/voting/auth/security"
+	"github.com/gabrielforster/voting/auth/jwt"
 	"github.com/gabrielforster/voting/auth/user"
 	"github.com/gabrielforster/voting/auth/user/database"
 	"github.com/gabrielforster/voting/commom/telemetry"
@@ -93,7 +93,7 @@ func userAuth(ctx context.Context, uService user.UseCase, otel telemetry.Telemet
 		var result struct {
 			Token string `json:"token"`
 		}
-		result.Token, err = security.NewToken(param.Email)
+		result.Token, err = jwt.NewToken(param.Email)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			oplog.Error().Msg(err.Error())
@@ -130,7 +130,7 @@ func validateToken(ctx context.Context, otel telemetry.Telemetry) http.HandlerFu
 			return
 		}
 
-		t, err := security.ParseToken(param.Token)
+		t, err := jwt.ParseToken(param.Token)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			span.RecordError(err)
@@ -138,7 +138,7 @@ func validateToken(ctx context.Context, otel telemetry.Telemetry) http.HandlerFu
 			oplog.Error().Msg(err.Error())
 			return
 		}
-		tData, err := security.GetClaims(t)
+		tData, err := jwt.GetClaims(t)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			span.RecordError(err)
