@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS user (
     first_name VARCHAR(100),
     last_name VARCHAR(100),
     created_at DATETIME,
-    updated_at DATETIME,
+    updated_at DATETIME
 )
 ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 
