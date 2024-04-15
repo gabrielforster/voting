@@ -1,3 +1,5 @@
 auth/bin
 vote/bin
 poll/bin
+
+.env
