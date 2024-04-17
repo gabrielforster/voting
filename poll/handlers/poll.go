@@ -31,7 +31,7 @@ func CreatePoll(ctx context.Context, pService poll.UseCase, otel telemetry.Telem
 			return
 		}
 		var p poll.Poll
-		err = pService.CreatePoll(ctx, p)
+		err = pService.CreatePoll(ctx, &p)
 		if err != nil {
 			w.WriteHeader(http.StatusForbidden)
 			span.RecordError(err)

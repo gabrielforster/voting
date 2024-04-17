@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -13,7 +12,7 @@ import (
 	"github.com/gabrielforster/voting/poll/handlers"
 	pollService "github.com/gabrielforster/voting/poll/poll"
 	pollDatabase "github.com/gabrielforster/voting/poll/poll/database"
-	"go.opentelemetry.io/otel/codes"
+	// "go.opentelemetry.io/otel/codes"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/httplog"

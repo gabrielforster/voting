@@ -1,14 +1,13 @@
-CREATE DATABASE IF NOT EXISTS polls_db;
+CREATE DATABASE IF NOT EXISTS poll_db;
 
-USE polls_db;
+USE poll_db;
 
-CREATE TABLE IF NOT EXISTS polls (
+CREATE TABLE IF NOT EXISTS `polls` (
     id INT AUTO INCREMENT,
     title VARCHAR(255) NOT NULL,
     hash CHAR(32) NOT NULL,
     decription TEXT,
     created_by INT NOT NULL,
-    pool_id INT NOT NULL,
     created_at DATETIME DEFAULT now(),
     updated_at DATETIME DEFAULT now() ON UPDATE now(),
 
