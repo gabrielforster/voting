@@ -2,9 +2,9 @@ package poll
 
 import (
 	"context"
-	"crypto/sha1"
 
 	"github.com/gabrielforster/voting/commom/telemetry"
+	"github.com/gabrielforster/voting/commom/utils"
 
 	"go.opentelemetry.io/otel/codes"
 )
@@ -28,7 +28,7 @@ func (s *Service) CreatePoll(ctx context.Context, poll *Poll) error {
 	ctx, span := s.telemetry.Start(ctx, "service")
 	defer span.End()
 
-    poll.Slug = stringToHash(poll.Title)
+	poll.Slug = utils.StringToHash(poll.Title)
 
 	err := s.repo.Store(ctx, poll)
 	if err != nil {
@@ -38,10 +38,4 @@ func (s *Service) CreatePoll(ctx context.Context, poll *Poll) error {
 	}
 
 	return nil
-}
-
-func stringToHash(s string) string {
-    hasher := sha1.New()
-    hasher.Write([]byte(s))
-    return string(hasher.Sum(nil))
 }
