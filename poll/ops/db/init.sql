@@ -15,12 +15,9 @@ CREATE TABLE IF NOT EXISTS `polls` (
     INDEX created_by_index (created_by)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 
-CREATE TRIGGER update_polls_updated_at
-BEFORE UPDATE ON polls
-FOR EACH ROW SET NEW.updated_at = now();
-
 CREATE TABLE IF NOT EXISTS `options` (
     id INT AUTO INCREMENT,
+    title VARCHAR(255) NOT NULL,
     pool_id INT NOT NULL,
     created_at DATETIME DEFAULT now(),
 
