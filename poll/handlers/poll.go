@@ -15,8 +15,11 @@ import (
 func CreatePoll(ctx context.Context, pService poll.UseCase, otel telemetry.Telemetry) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		oplog := httplog.LogEntry(r.Context())
-		ctx, span := otel.Start(ctx, "createPoll")
+		ctx, span := otel.Start(ctx, "service.create_poll")
 		defer span.End()
+
+		user_id := r.Context().Value("user_id")
+
 		var param struct {
 			Title       string   `json:"title"`
 			Description string   `json:"description"`
@@ -30,8 +33,9 @@ func CreatePoll(ctx context.Context, pService poll.UseCase, otel telemetry.Telem
 			oplog.Error().Msg(err.Error())
 			return
 		}
+
 		var p poll.Poll
-		err = pService.CreatePoll(ctx, &p)
+		err = pService.CreatePoll(ctx, &p, param.Options, user_id.(string))
 		if err != nil {
 			w.WriteHeader(http.StatusForbidden)
 			span.RecordError(err)
@@ -41,9 +45,11 @@ func CreatePoll(ctx context.Context, pService poll.UseCase, otel telemetry.Telem
 		}
 
 		var result struct {
-			Id int `json:"poll_id"`
+			Id       string `json:"indentifier"`
+			Location string `json:"location"`
 		}
-		result.Id = p.Id
+		result.Id = p.Hash
+		result.Location = "poll/" + p.Hash
 
 		if err := json.NewEncoder(w).Encode(result); err != nil {
 			w.WriteHeader(http.StatusBadGateway)

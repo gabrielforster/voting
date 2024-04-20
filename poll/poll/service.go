@@ -10,7 +10,7 @@ import (
 )
 
 type UseCase interface {
-	CreatePoll(ctx context.Context, poll *Poll) error
+	CreatePoll(ctx context.Context, poll *Poll, options []string, user_id string) error
 }
 
 type Service struct {
@@ -24,13 +24,13 @@ func NewService(repo Repository, telemetry telemetry.Telemetry) *Service {
 		telemetry: telemetry,
 	}
 }
-func (s *Service) CreatePoll(ctx context.Context, poll *Poll) error {
+func (s *Service) CreatePoll(ctx context.Context, poll *Poll, options []string, user_id string) error {
 	ctx, span := s.telemetry.Start(ctx, "service")
 	defer span.End()
 
-	poll.Slug = utils.StringToHash(poll.Title)
+	poll.Hash = utils.StringToHash(poll.Title)
 
-	err := s.repo.Store(ctx, poll)
+	err := s.repo.Store(ctx, poll, options, user_id)
 	if err != nil {
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())

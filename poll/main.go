@@ -9,7 +9,8 @@ import (
 	"time"
 
 	"github.com/gabrielforster/voting/commom/telemetry"
-	"github.com/gabrielforster/voting/poll/handlers"
+	"github.com/gabrielforster/voting/commom/middleware"
+	handlersPoll "github.com/gabrielforster/voting/poll/handlers"
 	pollService "github.com/gabrielforster/voting/poll/poll"
 	pollDatabase "github.com/gabrielforster/voting/poll/poll/database"
 	// "go.opentelemetry.io/otel/codes"
@@ -25,7 +26,14 @@ func main() {
 		JSON: true,
 	})
 
-	dataSourceName := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true", os.Getenv("DB_USER"), os.Getenv("DB_PASSWORD"), os.Getenv("DB_HOST"), os.Getenv("DB_PORT"), os.Getenv("DB_DATABASE"))
+	dataSourceName := fmt.Sprintf(
+		"%s:%s@tcp(%s:%s)/%s?parseTime=true",
+		os.Getenv("DB_USER"),
+		os.Getenv("DB_PASSWORD"),
+		os.Getenv("DB_HOST"),
+		os.Getenv("DB_PORT"),
+		os.Getenv("DB_DATABASE"),
+	)
 	db, err := sql.Open("mysql", dataSourceName)
 	if err != nil {
 		logger.Panic().Msg(err.Error())
@@ -48,11 +56,13 @@ func main() {
 		AllowAny: true,
 	}, []string{"/v1"}))
 
-	r.Post("/v1/poll", handlers.CreatePoll(ctx, pService, otel))
-	// r.Get("/v1/poll", validateToken(ctx, otel))
+	r.Use(middleware.ValidateToken(ctx, otel))
+	r.Post("/v1/poll", handlersPoll.CreatePoll(ctx, pService, otel))
+	// r.Get("/v1/poll/:hash", handlers.GetPoll(ctx, otel)) // return poll as json
+	// r.Get("/v1/poll/", handlers.GetPoll(ctx, otel)) // return poll as json
 	//
-	// r.Post("/v1/vote", userAuth(ctx, pService, otel))
-	// r.Get("/v1/vote", userAuth(ctx, pService, otel))
+	// r.Post("/v1/vote/:poll", handlers.CreateVote(ctx, pService, otel))
+	// r.Get("/v1/vote", handlers.(ctx, pService, otel))
 
 	http.Handle("/", r)
 	srv := &http.Server{
