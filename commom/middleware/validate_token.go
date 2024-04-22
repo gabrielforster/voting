@@ -14,55 +14,55 @@ import (
 	"go.opentelemetry.io/otel/codes"
 )
 
-func ValidateToken (ctx context.Context, telemetry telemetry.Telemetry) func(next http.Handler) http.Handler {
-    return func (next http.Handler) http.Handler {
-        fn := func(rw http.ResponseWriter, r *http.Request) {
-            _, span := telemetry.Start(ctx, "ValidateToken")
-            defer span.End()
+func ValidateToken(ctx context.Context, telemetry telemetry.Telemetry) func(next http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		fn := func(rw http.ResponseWriter, r *http.Request) {
+			_, span := telemetry.Start(ctx, "ValidateToken")
+			defer span.End()
 
-            errMessage := "Unauthorized"
-            token := r.Header.Get("Authorization")
+			errMessage := "Unauthorized"
+			token := r.Header.Get("Authorization")
 
-            if token == "" {
-                err := errors.New("Unauthorized")
-                span.RecordError(err)
-                span.SetStatus(codes.Error, err.Error())
-                respondWithError(rw, http.StatusUnauthorized, err.Error(), errMessage)
-                return
-            }
+			if token == "" {
+				err := errors.New("Unauthorized")
+				span.RecordError(err)
+				span.SetStatus(codes.Error, err.Error())
+				respondWithError(rw, http.StatusUnauthorized, err.Error(), errMessage)
+				return
+			}
 
-            payload := `{
+			payload := `{
 			"token": "` + token + `"
             }`
 
-            req, err := http.Post(os.Getenv("AUTH_URL") + "/v1/validate_token", strings.NewReader(payload))
-            if err != nil {
-                span.RecordError(err)
-                span.SetStatus(codes.Error, err.Error())
-                respondWithError(rw, http.StatusUnauthorized, err.Error(), errMessage)
-                return
-            }
+			req, err := http.Post(os.Getenv("AUTH_URL")+"/v1/validate_token", "application/json", strings.NewReader(payload))
+			if err != nil {
+				span.RecordError(err)
+				span.SetStatus(codes.Error, err.Error())
+				respondWithError(rw, http.StatusUnauthorized, err.Error(), errMessage)
+				return
+			}
 
-            defer req.Body.Close()
+			defer req.Body.Close()
 
-            type result struct {
-                Id string `json:"user_id"`
-            }
-            var res result
-            err = json.NewDecoder(req.Body).Decode(res)
-            if err != nil {
-                span.RecordError(err)
-                span.SetStatus(codes.Error, err.Error())
-                respondWithError(rw, http.StatusUnauthorized, err.Error(), errMessage)
-                return
-            }
+			type result struct {
+				Id string `json:"user_id"`
+			}
+			var res result
+			err = json.NewDecoder(req.Body).Decode(res)
+			if err != nil {
+				span.RecordError(err)
+				span.SetStatus(codes.Error, err.Error())
+				respondWithError(rw, http.StatusUnauthorized, err.Error(), errMessage)
+				return
+			}
 
-            newCtx := context.WithValue(r.Context(), "user_id", res.Id)
-            next.ServeHTTP(rw, r.WithContext(newCtx))
-        }
+			newCtx := context.WithValue(r.Context(), "user_id", res.Id)
+			next.ServeHTTP(rw, r.WithContext(newCtx))
+		}
 
-        return http.HandlerFunc(fn)
-    }
+		return http.HandlerFunc(fn)
+	}
 }
 
 func respondWithError(w http.ResponseWriter, code int, e string, message string) {
